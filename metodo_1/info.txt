@@ -1,0 +1,1 @@
+se empieza a desarrollar el metodo 1 de optimizacion utilizando git
