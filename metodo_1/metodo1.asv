@@ -3,7 +3,7 @@ clc;
 syms x1 x2 obj rest;
 obj = sym(input('Por favor digite z : ', 's'));
 fprintf('Por favor digite las restricciones en el siguiente formato :\n');
-fprintf('ejemplo [x1^2 + 3; x1 + 2 + x2] :\n');
+fprintf('ejemplo [x^2 + 3; x + 2 + y] :\n');
 rest = sym(input('Puede digitar las restricciones aqui : ', 's'));
 clc;
 fprintf('El programa de optimizacion a resolver ingresado es el siguiente :\n');
@@ -14,8 +14,7 @@ pretty(rest);
 for i=1:length(rest)
     degree = feval(symengine, 'degree', rest(i));
     if degree > 1
-        fprintf('Hay que linealizar la siguiente ecuacion : \n');
-        pretty(rest(i));
+        fprintf('Hay que linealizar la siguiente ecuacion :');
         % Voy a llamar la funcion para linelizar
     end
 end
