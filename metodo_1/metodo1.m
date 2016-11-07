@@ -14,6 +14,7 @@ pretty(rest);
 input('para continuar presione cualquier caracter : ', 's')
 clc;
 g = 3*x1^2 -2*x1*x2 + x2^2 - 1;
+obj = x1-x2
 f = [1,-1];
 A=[];
 b=[];
@@ -21,11 +22,12 @@ Aeq=[];
 beq=[];
 lb = [-2,-2];
 ub = [2,2];
-x = linprog(f,A,b,Aeq,beq,lb,ub);
-x = round(x);
-g2 = matlabFunction(g);
-eval = g2(x(1), x(2));
-gra = gradient(g, [x1, x2]);
-grad = [round(subs(gra(1), [x1 x2], [x(1) x(2)])), round(subs(gra(2), [x1 x2], [x(1) x(2)]))].';
-neweq = eval + grad*([x1 x2]-x.');
-
+x = linprog(f,A,b,Aeq,beq,lb,ub)
+x = round(x)'
+neweq =  sym(subs(g,[x1 x2],x) + subs(gradient(g)',[x1 x2], x)*([x1 x2]'-x' ))
+c = coeffs(neweq)
+A = double([c(3) c(2)])
+b = double([-c(1)])
+x = linprog(f,A,b,Aeq,beq,lb,ub)'
+disp(subs(g,[x1 x2], x))
+disp(subs(obj,[x1 x2], x))
