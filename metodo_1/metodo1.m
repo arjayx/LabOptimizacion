@@ -1,3 +1,5 @@
+%(Para Mauricio)%CAREVERGA, REESTRUCTURA ESTÁ CAGÁ, en FX, GX y HX
+%SLP SEQUENTIAL LINEAR PROGRAMMING
 clear;
 clc;
 %-------------------variables simbolicas
@@ -9,51 +11,79 @@ degree = feval(symengine, 'degree', obj);
 punto = input('Digite un punto Xi arbitrario de la forma [a,b]: ');
 if degree > 1
     fprintf('Hay que linealizar la función objetivo \n');
-    restli(j) = sym(subs(obj,[x1 x2],punto) + subs(gradient(obj)',[x1 x2], punto)*([x1 x2]'-punto' ))
+    obj = sym(subs(obj,[x1 x2],punto) + subs(gradient(obj)',[x1 x2], punto)*([x1 x2]'-punto' ))
 else
     lb = [punto(1),punto(1)];
     ub = [punto(2),punto(2)];
-    f = double(coeffs(obj));
+    f = fliplr(double(coeffs(obj)));
     A=[];
     b=[];
     Aeq=[];
     beq=[];
-    X = linprog(f,A,b,Aeq,beq,lb,ub);
-    X = round(X)'
+    X = round(linprog(f,A,b,Aeq,beq,lb,ub),4)'
 end
 %-------------------fin lectura y verificación de función objetivo
 fprintf('Por favor digite las restricciones en el siguiente formato :\n');
 fprintf('ejemplo [x1^2 + 3<= 3; x1 + 2 + x2 <= 4 ] :\n');
 rest = sym(input('Puede digitar las restricciones aqui : ', 's'));
-clc;
+tol = input('Digite la tolerancia: ');
 fprintf('El programa de optimizacion a resolver ingresado es el siguiente :\n');
 fprintf('funcion objetivo : \n');
 pretty(obj);
 fprintf('sujeto a :\n');
 pretty(rest);
-j=0;
+fprintf('con una tolerancia de: %d\n',tol);
+%-----------------------tratamiento y linealización de las restricciones
 for i=1:length(rest)
-    [c,matches] = strsplit(char(rest(i)),'\s*<=|>=|<|>\s*','DelimiterType','RegularExpression');
+    [c,matches] = strsplit(char(rest(i)),'\s*<=|>=|=\s*','DelimiterType','RegularExpression');%separamos la ecuacion
     syms eq value
-    fprintf('Esta es la  ecuacion :\n');
-    eq = sym(c{1})
-    fprintf('Este es el value de la ecucacion :\n');
-    value = sym(c{2})
-    degree = feval(symengine, 'degree', eq);
+    rest(i) = sym(c{1});
+    degree = feval(symengine, 'degree', rest(i));
     if degree > 1
-        j = j + 1; 
         fprintf('Hay que linealizar la siguiente ecuacion : \n');
         pretty(rest(i));
-        % Voy a llamar la funcion para linelizar
-        restli(j) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
+        restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
+        temp = double(coeffs(restli(i))) %para despejar la ecuación
+        if (strcmp(matches,'=')) %toco linealizar, se mira el tipo de restriccion y se agrega donde corresponde
+            Aeq = [temp(3),temp(2)]
+            beq = double(coeffs(sym(c{2}))) + temp(1)*-1
+        else
+            A = [temp(3),temp(2)]
+            b = double((sym(c{2}))) + temp(1)*-1
+        end
+    else %no se tiene que linealizar, se mira el tipo de restriccion y se agrega donde corresponde
+        restli(i)= rest
+        temp = double(coeffs(restli(i)));
+        if (strcmp(matches,'='))
+            Aeq = [temp(3),temp(2)]
+            beq = double(coeffs(sym(c{2}))) + temp(1)*-1
+        else
+            A = [temp(3),temp(2)]
+            b = double((sym(c{2}))) + temp(1)*-1
+        end
     end
 end
-input('para continuar presione cualquier caracter : ', 's')
-g = 3*x1^2 -2*x1*x2 + x2^2 - 1;
-obj = x1-x2
-c = coeffs(neweq)
-A = double([c(3) c(2)])
-b = double([-c(1)])
-x = linprog(f,A,b,Aeq,beq,lb,ub)'
-disp(subs(g,[x1 x2], x))
-disp(subs(obj,[x1 x2], x))
+%-----------------------tratamiento y linealización de las restricciones
+sw = 1;
+j=0;
+while sw == 1
+    j = j + 1;
+    X = linprog(f,A,b,Aeq,beq,lb,ub)'
+    for i=1:length(rest)
+        respuestas(j)= round(double(subs(rest(i),[x1,x2],X)),6)
+        if subs(rest(i),[x1,x2],X) <= tol
+            sw = 0;
+        end
+    end
+    if sw == 1
+        for i=1:length(rest)
+            degree = feval(symengine, 'degree', rest(i));
+            if degree > 1
+                restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
+                temp = double(coeffs(restli(i)))
+                A = [A;temp(3),temp(2)]
+                b = [b;temp(1)*-1]
+            end
+        end
+    end
+end
