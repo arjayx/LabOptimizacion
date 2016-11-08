@@ -1,4 +1,7 @@
-%(Para Mauricio)%CAREVERGA, REESTRUCTURA ESTÁ CAGÁ, en FX, GX y HX
+% Laboratorio de optimizacion 
+% Metodo 2
+% Roberto Daza, Mauricio Guzman, Alexander Taborda.
+% 2016
 %SLP SEQUENTIAL LINEAR PROGRAMMING
 clear;
 clc;
@@ -63,14 +66,29 @@ for i=1:length(rest)
         end
     end
 end
-%-----------------------tratamiento y linealización de las restricciones
+%--------------------end---------------------------------------------
 sw = 1;
 j=0;
+row=0;
+col = 0;
+cont = 1;
+m = zeros(1, 1);
 while sw == 1
+    cont = cont + 1;
     j = j + 1;
+    row = row+1;
+    col=1;
+    m(row,col) = fix(cont);
     X = linprog(f,A,b,Aeq,beq,lb,ub)'
+    
+    col = col+1;
+    m(row,col) = X(1);
+    col = col+1;
+    m(row,col)=X(2);
+    
     for i=1:length(rest)
         respuestas(j)= round(double(subs(rest(i),[x1,x2],X)),6)
+        m(row, col+1) = respuestas(j);
         if subs(rest(i),[x1,x2],X) <= tol
             sw = 0;
         end
@@ -87,3 +105,4 @@ while sw == 1
         end
     end
 end
+m
