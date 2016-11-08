@@ -23,7 +23,7 @@ else
 end
 %-------------------fin lectura y verificación de función objetivo
 fprintf('Por favor digite las restricciones en el siguiente formato :\n');
-fprintf('ejemplo [x1^2 + 3; x1 + 2 + x2] :\n');
+fprintf('ejemplo [x1^2 + 3<= 3; x1 + 2 + x2 <= 4 ] :\n');
 rest = sym(input('Puede digitar las restricciones aqui : ', 's'));
 clc;
 fprintf('El programa de optimizacion a resolver ingresado es el siguiente :\n');
@@ -33,7 +33,13 @@ fprintf('sujeto a :\n');
 pretty(rest);
 j=0;
 for i=1:length(rest)
-    degree = feval(symengine, 'degree', rest(i));
+    [c,matches] = strsplit(char(rest(i)),'\s*<=|>=|<|>\s*','DelimiterType','RegularExpression');
+    syms eq value
+    fprintf('Esta es la  ecuacion :\n');
+    eq = sym(c{1})
+    fprintf('Este es el value de la ecucacion :\n');
+    value = sym(c{2})
+    degree = feval(symengine, 'degree', eq);
     if degree > 1
         j = j + 1; 
         fprintf('Hay que linealizar la siguiente ecuacion : \n');
