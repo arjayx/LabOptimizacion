@@ -3,6 +3,7 @@
 % Roberto Daza, Mauricio Guzman, Alexander Taborda.
 % 2016
 %SLP SEQUENTIAL LINEAR PROGRAMMING
+tic
 clear;
 clc;
 %-------------------variables simbolicas
@@ -45,24 +46,24 @@ for i=1:length(rest)
     if degree > 1
         fprintf('Hay que linealizar la siguiente ecuacion : \n');
         pretty(rest(i));
-        restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
-        temp = double(coeffs(restli(i))) %para despejar la ecuación
+        restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ));
+        temp = double(coeffs(restli(i))); %para despejar la ecuación
         if (strcmp(matches,'=')) %toco linealizar, se mira el tipo de restriccion y se agrega donde corresponde
-            Aeq = [temp(3),temp(2)]
-            beq = double(coeffs(sym(c{2}))) + temp(1)*-1
+            Aeq = [temp(3),temp(2)];
+            beq = double(coeffs(sym(c{2}))) + temp(1)*-1;
         else
-            A = [temp(3),temp(2)]
-            b = double((sym(c{2}))) + temp(1)*-1
+            A = [temp(3),temp(2)];
+            b = double((sym(c{2}))) + temp(1)*-1;
         end
     else %no se tiene que linealizar, se mira el tipo de restriccion y se agrega donde corresponde
         restli(i)= rest
         temp = double(coeffs(restli(i)));
         if (strcmp(matches,'='))
-            Aeq = [temp(3),temp(2)]
-            beq = double(coeffs(sym(c{2}))) + temp(1)*-1
+            Aeq = [temp(3),temp(2)];
+            beq = double(coeffs(sym(c{2}))) + temp(1)*-1;
         else
             A = [temp(3),temp(2)]
-            b = double((sym(c{2}))) + temp(1)*-1
+            b = double((sym(c{2}))) + temp(1)*-1;
         end
     end
 end
@@ -73,13 +74,14 @@ row=0;
 col = 0;
 cont = 1;
 m = zeros(1, 1);
+iterCont = 0;
 while sw == 1
     cont = cont + 1;
     j = j + 1;
     row = row+1;
     col=1;
     m(row,col) = fix(cont);
-    X = linprog(f,A,b,Aeq,beq,lb,ub)'
+    X = linprog(f,A,b,Aeq,beq,lb,ub)';
     
     col = col+1;
     m(row,col) = X(1);
@@ -87,7 +89,7 @@ while sw == 1
     m(row,col)=X(2);
     
     for i=1:length(rest)
-        respuestas(j)= round(double(subs(rest(i),[x1,x2],X)),6)
+        respuestas(j)= round(double(subs(rest(i),[x1,x2],X)),6);
         m(row, col+1) = respuestas(j);
         if subs(rest(i),[x1,x2],X) <= tol
             sw = 0;
@@ -98,11 +100,18 @@ while sw == 1
             degree = feval(symengine, 'degree', rest(i));
             if degree > 1
                 restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
-                temp = double(coeffs(restli(i)))
-                A = [A;temp(3),temp(2)]
-                b = [b;temp(1)*-1]
+                temp = double(coeffs(restli(i)));
+                A = [A;temp(3),temp(2)];
+                b = [b;temp(1)*-1];
             end
         end
     end
+    iterCont = iterCont + 1; 
 end
+fprintf('La tabla de resultado es la siguiente: \n');
 m
+fprintf('El numero de iteraciones es el siguiente : \n' );
+disp(iterCont);
+time = toc;
+fprintf('El tiempo en segundo es el siguiente : \n');
+disp(time);
