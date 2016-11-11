@@ -82,22 +82,21 @@ while(condition == 0)
         [n, m] = size(Aeq);
         for i=1:(numOfY - n)
             last = last + 1;
-            Reqi = [vAux(i,:) yAux(last,:)]
+            Reqi = [vAux(i,:) yAux(last,:)];
             Aeq = [Aeq;Reqi];
             beq = [beq;2];
         end
         A = [1 0 0 0 0 0 0; 0 1 0 0 0 0 0; 0 0 1 0 0 0 0];
         b = [0;0;0];
-        linprog(F, [], [], double(Aeq), double(beq), zeros(3,1))
-        Si = [1 -0.7];
-    end
+        X = linprog(F, [], [], double(Aeq), double(beq), zeros(7,1));
+        Si = [(X(1) - 1) (X(2) - 1)];
+        Si = [1 -0.7]
+    end    
 
     %PASO 5
     Fl = subs(obj,[x1 x2], punto + l * Si); % Funcion con la que se haya el lamda
     lamda = solve(diff(Fl, l), l);
     spunto = punto + lamda * Si; %En esta parte spunto es el punto actual
-    
-    double(spunto)
     
     for i=1:length(rest) %PASO 2 reutilizacion verificar que no viola la condicion las restricciones
         [c,matches] = strsplit(char(rest(i)),'\s*<=|>=|=\s*','DelimiterType','RegularExpression');%separamos la ecuacion
@@ -113,7 +112,7 @@ while(condition == 0)
     %PASO 6
     Fx1 = subs(obj, [x1 x2], punto);
     Fx2 = subs(obj, [x1 x2], spunto);
-
+    double(Fx2)
     %PASO 7
     value1 = abs((Fx1 - Fx2) / Fx1);
     value2 = norm(punto - spunto);
@@ -121,10 +120,6 @@ while(condition == 0)
         condition = 0;
     else
         condition = 1;
-    end
-    
-    if(iteration == 2)
-       break; 
     end
 end
 
