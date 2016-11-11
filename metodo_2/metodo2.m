@@ -53,9 +53,6 @@ while(condition == 0)
         end
     end
     
-    Si = double(-subs(gradient(obj),[x1 x2], X(k,:))')
-    Si = Si / max(abs(Si(:)))
-    
     if(step3 == 1) %PASO 3 y 4        
         numOfY = 2 + length(rest) + 1;
         numOfVar = 2 + numOfY + 1;
@@ -86,11 +83,14 @@ while(condition == 0)
             Aeq = [Aeq;Reqi];
             beq = [beq;2];
         end
-        Xl = linprog(F, [], [], double(Aeq), double(beq), zeros(7,1));
+        Xl = linprog(F, [], [], double(Aeq), double(beq), zeros(numOfVar, 1));
         Si = [(Xl(1) - 1) (Xl(2) - 1)];
         if(Xl(3) <= e1) %PASO 4
             step5 = 0; 
         end
+    else
+        Si = -subs(gradient(obj),[x1 x2], X(k,:))';
+        Si = Si / max(abs(Si(:)));
     end    
 
     %PASO 5
