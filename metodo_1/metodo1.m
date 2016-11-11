@@ -23,7 +23,7 @@ A=[];
 b=[];
 Aeq=[];
 beq=[];
-X = round(linprog(f,A,b,Aeq,beq,lb,ub),4)'
+X = round(linprog(f,A,b,Aeq,beq,lb,ub))'
 %-------------------fin lectura y verificación de función objetivo
 fprintf('Por favor digite las restricciones en el siguiente formato :\n');
 fprintf('ejemplo [x1^2 + 3<= 3; x1 + 2 + x2 <= 4 ] :\n');
@@ -88,7 +88,7 @@ while sw == 1
     m(row,col)=X(2);
     
     for i=1:length(rest)
-        respuestas(j)= round(double(subs(rest(i),[x1,x2],X)),6);
+        respuestas(j)= round(double(subs(rest(i),[x1,x2],X)));
         m(row, col+1) = respuestas(j);
         if subs(rest(i),[x1,x2],X) <= tol
             sw = 0;
@@ -98,7 +98,7 @@ while sw == 1
         for i=1:length(rest)
             degree = feval(symengine, 'degree', rest(i));
             if degree > 1
-                restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ))
+                restli(i) = sym(subs(rest(i),[x1 x2],X) + subs(gradient(rest(i))',[x1 x2], X)*([x1 x2]'-X' ));
                 temp = double(coeffs(restli(i)));
                 A = [A;temp(3),temp(2)];
                 b = [b;temp(1)*-1];
